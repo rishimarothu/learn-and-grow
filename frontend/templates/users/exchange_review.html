@@ -1,0 +1,48 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Exchange - Student Resource Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; color: #1e293b; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 w-full max-w-lg">
+        <h2 class="text-2xl font-bold mb-2">Review Exchange Offer</h2>
+        <p class="text-gray-500 mb-6"><strong>{{ requester.name }}</strong> has uploaded a file in exchange for your <strong>{{ target_res.title }}</strong>.</p>
+        
+        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-6">
+            <h4 class="font-bold text-sm mb-2 text-gray-700">They uploaded:</h4>
+            <a href="/download/{{ offered_res.id }}" class="flex items-center space-x-3 text-indigo-600 font-semibold hover:underline">
+                <i class="fa-solid fa-file-arrow-down text-2xl"></i>
+                <span>Download & Review File</span>
+            </a>
+        </div>
+        
+        <form action="/exchange/accept/{{ offer.id }}" method="POST" class="space-y-3">
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl transition shadow-md">
+                Accept Exchange & Unlock Downloads
+            </button>
+            <a href="/dashboard" class="block w-full text-center bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3.5 rounded-xl transition">
+                Decide Later
+            </a>
+        </form>
+    </div>
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,99 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Learn & Grow - Student Resource Hub</title>
+    <!-- Removed 'defer' to prevent FOUC (Flash of Unstyled Content) and broken SVGs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('/static/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .get-started-btn {
+            background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 100%);
+            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+        }
+        .get-started-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.23);
+        }
+    </style>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        html.dark { filter: invert(1) hue-rotate(180deg); background: #0a0a0a; }
+        html.dark img, html.dark video { filter: invert(1) hue-rotate(180deg); }
+    </style>
+
+</head>
+<body>
+    
+    <!-- Positioned absolute to the bottom to avoid overlapping baked-in text on bg.png -->
+    <div style="position: absolute; bottom: 15%; width: 100%; text-align: center;">
+        <a href="/login" class="get-started-btn text-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300 ease-in-out inline-flex items-center space-x-2">
+            <span>Get Started</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </a>
+    </div>
+
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

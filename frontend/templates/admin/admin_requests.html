@@ -1,0 +1,128 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Requests - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; color: #1e293b; overflow: hidden; }
+        .sidebar-item { display: flex; align-items: center; padding: 10px 16px; margin: 4px 16px; border-radius: 8px; color: #475569; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .sidebar-item:hover { background-color: #f1f5f9; color: #1e293b; }
+        .sidebar-item i { width: 24px; font-size: 16px; text-align: center; margin-right: 12px; }
+        .main-scroll { overflow-y: auto; height: 100vh; padding-bottom: 40px; }
+    </style>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-white shadow-[2px_0_15px_rgba(0,0,0,0.02)] flex flex-col z-20 shrink-0">
+    <!-- Logo -->
+    <div class="py-8 px-6 flex flex-col items-center justify-center">
+        <div class="text-green-500 text-4xl mb-2"><i class="fa-solid fa-leaf"></i></div>
+        <h1 class="text-xl font-bold text-center leading-tight text-gray-800">Student<br>Resource Hub</h1>
+        <p class="text-xs text-gray-400 mt-1">Learn &middot; Share &middot; Grow</p>
+    </div>
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto">
+        {% if user.role == "admin" %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+        
+        <a href="/all-users" class="sidebar-item"><i class="fa-solid fa-users"></i> All Users</a>
+        <a href="/reports" class="sidebar-item"><i class="fa-solid fa-chart-simple"></i> Reports & Analytics</a>
+        <a href="/admin-messages" class="sidebar-item"><i class="fa-regular fa-envelope"></i> Messages</a>
+        {% else %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/liked-resources" class="sidebar-item"><i class="fa-solid fa-heart"></i> Liked Resources</a>
+        <a href="/saved-resources" class="sidebar-item"><i class="fa-solid fa-bookmark"></i> Saved Resources</a>
+        <a href="/requests" class="sidebar-item"><i class="fa-solid fa-hand-holding-hand"></i> Raise a Request</a>
+        <a href="/my-exchanges" class="sidebar-item"><i class="fa-solid fa-rotate"></i> My Exchanges</a><a href="/rewards" class="sidebar-item"><i class="fa-solid fa-coins text-yellow-500"></i> My Rewards</a>
+        <a href="/help" class="sidebar-item"><i class="fa-solid fa-headset"></i> Help & Support</a>
+        {% endif %}
+    </nav>
+    <!-- Bottom Art -->
+    <div class="p-6 text-center opacity-70">
+        <div class="text-green-500 text-3xl mb-2 opacity-50"><i class="fa-solid fa-book"></i></div>
+        <p class="font-cursive italic text-sm text-gray-500 transform -rotate-3">Better<br>Students<br>Brighter<br>Tomorrows <i class="fa-regular fa-heart ml-1"></i></p>
+    </div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col main-scroll">
+    <div class="px-10 py-8 max-w-5xl mx-auto w-full">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8">All Admin Requests</h2>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left text-sm text-gray-500">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-700">
+                    <tr>
+                        <th class="px-6 py-4">Name</th>
+                        <th class="px-6 py-4">Email</th>
+                        <th class="px-6 py-4">Phone Number</th>
+                        <th class="px-6 py-4">Requested On</th>
+                        <th class="px-6 py-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in admin_requests %}
+                    <tr class="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td class="px-6 py-4 font-bold text-gray-800">{{ req.name }}</td>
+                        <td class="px-6 py-4">{{ req.email }}</td>
+                        <td class="px-6 py-4">{{ req.phone_number }}</td>
+                        <td class="px-6 py-4">{{ req.created_at.strftime('%Y-%m-%d') if req.created_at else 'Today' }}</td>
+                        <td class="px-6 py-4 flex gap-3">
+                            <form action="/api/admin/approve/{{ req.id }}" method="POST"><button type="submit" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-bold hover:bg-green-200 transition shadow-sm"><i class="fa-solid fa-check mr-1"></i> Accept</button></form>
+                            <form action="/api/admin/reject/{{ req.id }}" method="POST"><button type="submit" class="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-bold hover:bg-red-200 transition shadow-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button></form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="px-6 py-12 text-center text-gray-400">No pending admin requests.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

@@ -1,0 +1,116 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Updates - Resource Sharing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        body { font-family: 'Nunito', sans-serif; background-color: #f3f6fb; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    
+    <!-- Top Bar -->
+    <header class="bg-white shadow-sm py-4 px-8 flex justify-between items-center shrink-0">
+        <a href="/dashboard" class="flex items-center text-gray-500 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+        <div class="font-bold text-lg text-gray-800"><i class="fa-solid fa-users text-indigo-500 mr-2"></i> Community Updates</div>
+    </header>
+    
+        <main class="flex-1 w-full max-w-4xl mx-auto p-8">
+        <h1 class="text-3xl font-black text-gray-800 mb-2">Community Updates</h1>
+        <p class="text-gray-500 mb-8">Official announcements and updates from the platform administrators.</p>
+
+        <!-- Admin Community Updates Side -->
+            <div id="content-admin" class="space-y-6 block">
+                <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center border-b border-gray-200 pb-2">
+                    <i class="fa-solid fa-bullhorn text-green-500 mr-2"></i> Official Updates
+                </h3>
+                <div class="space-y-6">
+                    {% if not admin_updates %}
+                    <div class="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <i class="fa-regular fa-comments text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 font-medium">No official updates from the admin yet.</p>
+                    </div>
+                    {% else %}
+                        {% for update in admin_updates %}
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100 shadow-sm flex flex-col hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center text-sm font-bold text-green-800">
+                                    <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center mr-2 shadow-sm text-xs">
+                                        <i class="fa-solid fa-crown"></i>
+                                    </div>
+                                    Admin Update
+                                </div>
+                                <span class="text-[10px] bg-green-200 text-green-800 font-black uppercase px-2 py-1 rounded">Official</span>
+                            </div>
+                            
+                            <h4 class="font-black text-gray-800 text-lg mb-1">{{ update.title }}</h4>
+                    <p class="text-xs font-bold text-indigo-500 mb-3"><i class="fa-regular fa-clock"></i> {{ update.created_at.strftime('%b %d, %Y at %I:%M %p') if update.created_at else 'Just now' }}</p>
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">{{ update.content }}</p>
+                            
+                            <div class="mt-auto border-t border-green-200/50 pt-4 flex justify-between items-center text-xs font-semibold text-green-700">
+                                <span><i class="fa-solid fa-bullseye mr-1"></i> Audience: {{ update.audience|default('All') }}</span>
+                                {% if user.role == 'admin' %}
+                                <div class="flex space-x-2">
+                                    <a href="/admin/edit-update/{{ update.id }}" class="text-blue-500 hover:text-blue-700 px-2 py-1 bg-blue-50 rounded"><i class="fa-solid fa-pen"></i> Edit</a>
+                                    <form action="/api/admin/delete-update/{{ update.id }}" method="POST" onsubmit="return confirm('Delete this update?');" class="inline">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 px-2 py-1 bg-red-50 rounded"><i class="fa-solid fa-trash"></i> Delete</button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

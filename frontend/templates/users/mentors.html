@@ -1,0 +1,198 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Mentor - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; color: #1e293b; overflow: hidden; }
+        .sidebar-item { display: flex; align-items: center; padding: 10px 16px; margin: 4px 16px; border-radius: 8px; color: #475569; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .sidebar-item:hover { background-color: #f1f5f9; color: #1e293b; }
+        .sidebar-item i { width: 24px; font-size: 16px; text-align: center; margin-right: 12px; }
+        .main-scroll { overflow-y: auto; height: 100vh; padding-bottom: 40px; }
+    </style>
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        html.dark { filter: invert(1) hue-rotate(180deg); background: #0a0a0a; }
+        html.dark img, html.dark video { filter: invert(1) hue-rotate(180deg); }
+    </style>
+
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-white shadow-[2px_0_15px_rgba(0,0,0,0.02)] flex flex-col z-20 shrink-0">
+    <!-- Logo -->
+    <div class="py-8 px-6 flex flex-col items-center justify-center">
+        <div class="text-green-500 text-4xl mb-2"><i class="fa-solid fa-leaf"></i></div>
+        <h1 class="text-xl font-bold text-center leading-tight text-gray-800">Student<br>Resource Hub</h1>
+        <p class="text-xs text-gray-400 mt-1">Learn &middot; Share &middot; Grow</p>
+    </div>
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto">
+        {% if user.role == "admin" %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+        
+        <a href="/all-users" class="sidebar-item"><i class="fa-solid fa-users"></i> All Users</a>
+        <a href="/reports" class="sidebar-item"><i class="fa-solid fa-chart-simple"></i> Reports & Analytics</a>
+        <a href="/admin-messages" class="sidebar-item"><i class="fa-regular fa-envelope"></i> Messages</a>
+        {% else %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/liked-resources" class="sidebar-item"><i class="fa-solid fa-heart"></i> Liked Resources</a>
+        <a href="/saved-resources" class="sidebar-item"><i class="fa-solid fa-bookmark"></i> Saved Resources</a>
+        <a href="/requests" class="sidebar-item"><i class="fa-solid fa-hand-holding-hand"></i> Raise a Request</a>
+        <a href="/my-exchanges" class="sidebar-item"><i class="fa-solid fa-rotate"></i> My Exchanges</a><a href="/rewards" class="sidebar-item"><i class="fa-solid fa-coins text-yellow-500"></i> My Rewards</a>
+        <a href="/help" class="sidebar-item"><i class="fa-solid fa-headset"></i> Help & Support</a>
+        {% endif %}
+    </nav>
+    <!-- Bottom Art -->
+    <div class="p-6 text-center opacity-70">
+        <div class="text-green-500 text-3xl mb-2 opacity-50"><i class="fa-solid fa-book"></i></div>
+        <p class="font-cursive italic text-sm text-gray-500 transform -rotate-3">Better<br>Students<br>Brighter<br>Tomorrows <i class="fa-regular fa-heart ml-1"></i></p>
+    </div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col main-scroll relative">
+    <!-- Mobile Top Bar -->
+    <div class="md:hidden bg-white shadow-sm p-4 flex items-center justify-between z-40 sticky top-0 shrink-0">
+        <div class="font-bold text-lg text-gray-800 flex items-center"><i class="fa-solid fa-leaf text-green-500 mr-2"></i> Resource Hub</div>
+        <button onclick="document.getElementById('mobile-sidebar').classList.remove('-translate-x-full')" class="text-gray-600 focus:outline-none">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+    </div>
+
+    <header class="flex justify-between items-center py-6 px-10 sticky top-0 bg-[#f3f6fb]/90 backdrop-blur-sm z-10">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Mentorship Board</h2>
+            <p class="text-sm text-gray-500">Request help or offer your expertise to others.</p>
+        </div>
+        <button onclick="document.getElementById('post-modal').classList.remove('hidden')" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-sm transition"><i class="fa-solid fa-hand-holding-hand mr-2"></i> Request a Mentor</button>
+    </header>
+    
+    <div class="px-10 pb-10">
+        {% if requests|length == 0 %}
+        <div class="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-4xl mx-auto">
+            <div class="text-purple-200 text-7xl mb-4"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">No open requests</h3>
+            <p class="text-gray-500 max-w-sm mx-auto">Everyone seems to be doing fine! If you need help with a subject, request a mentor now.</p>
+        </div>
+        {% else %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for req in requests %}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition">
+                <div class="flex justify-between items-start mb-4">
+                    
+                    
+    {% if req.student_id == user.id %}
+    <div class="flex justify-between w-full">
+        <a href="/mentors/edit/{{ req.id }}" class="text-xs text-indigo-500 font-bold hover:underline"><i class="fa-solid fa-pen"></i> Edit</a>
+        <form action="/mentors/delete/{{ req.id }}" method="POST" class="inline" onsubmit="return confirm('Delete this request?');">
+            <button type="submit" class="text-xs text-red-500 font-bold hover:underline"><i class="fa-solid fa-trash"></i> Delete</button>
+        </form>
+    </div>
+    {% else %}
+    <span class="text-[10px] font-semibold text-gray-400">{{ req.created_at if req.created_at else 'Just now' }}</span>
+    {% endif %}
+
+                </div>
+                
+                <h3 class="font-bold text-lg text-gray-900 mb-1">{{ req.subject }}</h3>
+                <p class="text-sm text-gray-600 mb-4 flex-1">{{ req.description }}</p>
+                
+                <div class="flex items-center space-x-3 mb-6 pt-4 border-t border-gray-100">
+                    <img src="https://ui-avatars.com/api/?name={{ req.student.name }}&background=random" class="w-8 h-8 rounded-full">
+                    <div>
+                        <p class="text-xs text-gray-400 font-medium leading-tight">Student</p>
+                        <p class="text-sm font-semibold text-gray-800 leading-tight">{{ req.student.name }}</p>
+                    </div>
+                </div>
+                
+                {% if user.id != req.student_id %}
+                <form action="/mentors/accept/{{ req.id }}" method="POST">
+                    <button type="submit" class="w-full bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white font-bold py-2.5 rounded-xl text-sm transition border border-purple-200 hover:border-purple-600">
+                        Accept & Teach
+                    </button>
+                </form>
+                {% else %}
+                <button class="w-full bg-gray-100 text-gray-400 font-bold py-2.5 rounded-xl text-sm cursor-not-allowed">Your Request</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% endif %}
+    </div>
+</main>
+
+<!-- Request Modal -->
+<div id="post-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold text-lg">Request a Mentor</h3>
+            <button onclick="document.getElementById('post-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <form action="/mentors/request" method="POST" class="p-6">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Subject / Topic</label>
+                <input type="text" name="subject" required placeholder="e.g., Database Management Systems" class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">What exactly do you need help with?</label>
+                <textarea name="description" required rows="4" placeholder="I am struggling to understand Normalization and BCNF forms. I need someone to explain it to me with examples." class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition shadow-sm">Post Request</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+
+

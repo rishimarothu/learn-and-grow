@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chat - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; }
+        .chat-container { height: calc(100vh - 120px); }
+        .messages-area::-webkit-scrollbar { width: 6px; }
+        .messages-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+    
+    <!-- Top Bar -->
+    <header class="bg-white shadow-sm py-4 px-8 flex justify-between items-center shrink-0 z-10 relative">
+        <a href="/dashboard" class="flex items-center text-gray-500 hover:text-indigo-600 transition font-semibold">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+        <div class="font-bold text-lg text-gray-800 flex items-center">
+            <i class="fa-solid fa-earth-americas text-indigo-500 mr-2 text-xl"></i> Global Community Chat
+        </div>
+        <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center font-bold text-sm">
+                {{ user.name[0] }}
+            </div>
+            <span class="ml-2 font-semibold text-gray-700">{{ user.name }}</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex justify-center p-4 h-full">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-sm border border-gray-100 flex flex-col chat-container">
+            
+            <!-- Messages Area -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4 messages-area bg-gray-50/50 rounded-t-2xl">
+                <div class="text-center text-gray-400 text-sm py-4 italic">
+                    <i class="fa-solid fa-lock text-gray-300 mb-1"></i><br>
+                    End-to-end community interaction. Say hi!
+                </div>
+                <!-- Messages will be injected here via JS -->
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-4 border-t border-gray-100 bg-white rounded-b-2xl">
+                <form id="chat-form" class="flex items-end gap-3" onsubmit="sendMessage(event)">
+                    <div class="relative group cursor-pointer shrink-0">
+                        <label for="image-upload" class="flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-indigo-600 transition cursor-pointer shadow-sm">
+                            <i class="fa-solid fa-paperclip text-xl"></i>
+                        </label>
+                        <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    </div>
+                    
+                    <div class="flex-1 relative">
+                        <div id="image-preview-container" class="hidden absolute bottom-full mb-2 left-0 bg-white p-2 rounded-lg shadow-md border border-gray-200 relative w-max">
+                            <img id="image-preview" src="" class="h-20 rounded-md object-cover">
+                            <button type="button" onclick="clearImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow"><i class="fa-solid fa-times"></i></button>
+                        </div>
+                        <input type="text" id="message-input" class="w-full px-5 py-3.5 bg-gray-100 border-none rounded-full focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-gray-700 shadow-inner" placeholder="Type your message...">
+                    </div>
+                    
+                    <button type="submit" id="send-btn" class="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-md shrink-0 disabled:opacity-50">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const CURRENT_USER_ID = {{ user.id }};
+        const messagesContainer = document.getElementById('messages-container');
+        let lastMessageId = 0;
+        let isFirstLoad = true;
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/api/chat/messages');
+                const messages = await response.json();
+                
+                let html = '';
+                let hasNew = false;
+                
+                messages.forEach(msg => {
+                    if (msg.id > lastMessageId) {
+                        hasNew = true;
+                        lastMessageId = Math.max(lastMessageId, msg.id);
+                    }
+                    
+                    const isMe = msg.user_id === CURRENT_USER_ID;
+                    const alignClass = isMe ? 'justify-end' : 'justify-start';
+                    const bubbleBg = isMe ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm';
+                    const nameColor = isMe ? 'text-indigo-200' : 'text-gray-500';
+                    const timeColor = isMe ? 'text-indigo-200' : 'text-gray-400';
+                    
+                    html += `
+                        <div class="flex ${alignClass} mb-4">
+                            ${!isMe ? `<a href="/user/${msg.user_id}"><div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs mr-2 shrink-0 hover:bg-indigo-200 transition cursor-pointer" title="View Profile">${msg.user_name.charAt(0)}</div></a>` : ''}
+                            <div class="max-w-[70%] flex flex-col">
+                                <div class="flex items-baseline space-x-2 mb-1 ${isMe ? 'justify-end' : ''}">
+                                    <span class="text-[11px] font-bold ${nameColor}">${isMe ? 'You' : `<a href="/user/${msg.user_id}" class="hover:underline cursor-pointer">${msg.user_name}</a>`}</span>
+                                    <span class="text-[10px] ${timeColor}">${msg.created_at}</span>
+                                </div>
+                                <div class="${bubbleBg} px-4 py-2.5 rounded-2xl">
+                                    ${msg.image_url ? `<img src="${msg.image_url}" class="max-w-full rounded-lg mb-2 ${msg.message ? '' : 'mb-0'} border ${isMe ? 'border-indigo-400' : 'border-gray-200'}" style="max-height: 200px; object-fit: contain;">` : ''}
+                                    ${msg.message ? `<p class="text-[15px] leading-relaxed break-words">${msg.message}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (html) {
+                    messagesContainer.innerHTML = html;
+                    if (hasNew || isFirstLoad) {
+                        scrollToBottom();
+                        isFirstLoad = false;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching messages:", error);
+            }
+        }
+
+        // Image Preview Logic
+        let selectedFile = null;
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview-container').classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearImage() {
+            selectedFile = null;
+            document.getElementById('image-upload').value = "";
+            document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            const btn = document.getElementById('send-btn');
+            
+            if (!message && !selectedFile) return;
+
+            btn.disabled = true;
+            input.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+            const formData = new FormData();
+            if (message) formData.append('message', message);
+            if (selectedFile) formData.append('image', selectedFile);
+
+            try {
+                const response = await fetch('/api/chat/send', {
+                    method: 'POST',
+                    body: formData
+                });
+                if(response.ok) {
+                    input.value = '';
+                    clearImage();
+                    await fetchMessages(); // immediately fetch
+                }
+            } catch (err) {
+                console.error("Failed to send message", err);
+            } finally {
+                btn.disabled = false;
+                input.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+                input.focus();
+            }
+        }
+
+        // Poll every 2 seconds
+        setInterval(fetchMessages, 2000);
+        fetchMessages();
+    </script>
+</body>
+</html>

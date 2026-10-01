@@ -1,0 +1,187 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ r.title }} - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        html.dark { filter: invert(1) hue-rotate(180deg); background: #0a0a0a; }
+        html.dark img, html.dark video { filter: invert(1) hue-rotate(180deg); }
+    </style>
+
+</head>
+<body class="bg-[#f3f6fb] font-sans text-gray-800 min-h-screen flex flex-col">
+    <header class="bg-white border-b border-gray-100 py-4 px-10 flex justify-between items-center shadow-sm">
+        <h1 class="text-2xl font-bold text-indigo-600"><i class="fa-solid fa-graduation-cap mr-2"></i>Learn & Grow</h1>
+        <a href="/search" class="text-gray-500 hover:text-indigo-600 font-semibold"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Browse</a>
+    </header>
+    {% if error_msg %}
+    <div class="max-w-6xl mx-auto px-8 pt-4">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fa-solid fa-circle-exclamation text-red-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700 font-medium">{{ error_msg }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <main class="flex-1 max-w-5xl mx-auto w-full p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Left Side: Image/File & Details -->
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative">
+                
+
+
+                <div class="flex justify-between items-start mb-4 pr-12">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">{{ r.category }}</span>
+                    <span class="text-sm text-gray-500"><i class="fa-regular fa-clock mr-1"></i> Posted on {{ r.date_posted }}</span>
+                </div>
+                
+                {% if user.id == r.owner_id %}
+                <!-- Edit Form -->
+                <form action="/resource/{{ r.id }}/edit" method="POST" class="space-y-4">
+                    <label class="block text-sm font-semibold">Title</label>
+                    <input type="text" name="title" value="{{ r.title }}" class="w-full p-3 border border-gray-200 rounded-lg">
+                    <label class="block text-sm font-semibold">Description</label>
+                    <textarea name="description" rows="4" class="w-full p-3 border border-gray-200 rounded-lg">{{ r.description }}</textarea>
+                    
+                    {% if r.resource_type == 'rent' %}
+                    <label class="block text-sm font-semibold">Price per day</label>
+                    <input type="text" name="price_per_day" value="{{ r.price_per_day }}" class="w-full p-3 border border-gray-200 rounded-lg">
+                    {% elif r.resource_type == 'exchange' %}
+                    <label class="block text-sm font-semibold">Exchange for</label>
+                    <input type="text" name="exchange_for" value="{{ r.exchange_for }}" class="w-full p-3 border border-gray-200 rounded-lg">
+                    {% endif %}
+                    
+                    <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700">Save Changes</button>
+                </form>
+                {% else %}
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ r.title }}</h2>
+                <p class="text-gray-600 leading-relaxed text-lg">{{ r.description }}</p>
+                {% endif %}
+            </div>
+            
+            {% if r.image %}
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+                <h3 class="font-bold mb-4 text-left text-lg">Attached File</h3>
+                
+                {% if r.image.endswith('.jpg') or r.image.endswith('.jpeg') or r.image.endswith('.png') or r.image.endswith('.webp') %}
+                    <div class="mb-4">
+                        <img src="{{ r.image }}" class="max-h-[500px] mx-auto rounded-xl shadow-sm border border-gray-200 object-contain w-full">
+                    </div>
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 w-full justify-center">
+                        <button onclick="document.getElementById('preview-box').classList.remove('hidden'); document.body.style.overflow = 'hidden';" class="inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition w-full sm:w-auto">
+                            <i class="fa-solid fa-expand mr-2"></i> Fullscreen Preview
+                        </button>
+                        <a href="/download/{{ r.id }}" class="inline-flex items-center justify-center w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition">
+                            <i class="fa-solid fa-download mr-2"></i> Save Image to Device
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="p-10 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center">
+                        <i class="fa-solid fa-file-lines text-6xl text-indigo-400 mb-4"></i>
+                        <p class="text-gray-800 font-bold text-lg mb-2">Document / Notes File</p>
+                        <p class="text-gray-500 text-sm mb-6">Preview the document to check its quality before choosing to save it.</p>
+                        
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 w-full justify-center">
+                            <button onclick="document.getElementById('preview-box').classList.remove('hidden'); document.body.style.overflow = 'hidden';" class="inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition w-full sm:w-auto">
+                                <i class="fa-solid fa-eye mr-2"></i> Live Preview
+                            </button>
+                            <a href="/download/{{ r.id }}" class="inline-flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-md transition w-full sm:w-auto">
+                                <i class="fa-solid fa-download mr-2"></i> Save to Device
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Full Screen Modal Previewer (Available for both Image and Doc) -->
+                <div id="preview-box" class="hidden fixed inset-0 z-[100] bg-black/95 flex flex-col backdrop-blur-md transition-all duration-300">
+                    <div class="bg-gray-900 text-white p-4 flex justify-between items-center shadow-lg z-10 border-b border-gray-800">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-magnifying-glass mr-3 text-indigo-400"></i>
+                            <div>
+                                <h3 class="font-bold text-lg leading-tight">Live File Preview</h3>
+                                <p class="text-xs text-gray-400 font-medium">Viewing: {{ r.title }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <a href="/download/{{ r.id }}"  class="hidden sm:inline-flex bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-lg transition">
+                                <i class="fa-solid fa-download mr-2"></i> Save File
+                            </a>
+                            <button onclick="document.getElementById('preview-box').classList.add('hidden'); document.body.style.overflow = 'auto';" class="bg-red-500/20 hover:bg-red-500 hover:text-white text-red-400 font-bold w-10 h-10 rounded-full flex items-center justify-center transition">
+                                <i class="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-1 w-full h-full bg-[#0a0a0a] flex items-center justify-center p-2 sm:p-6 lg:p-10">
+                        {% if r.image.endswith('.jpg') or r.image.endswith('.jpeg') or r.image.endswith('.png') or r.image.endswith('.webp') %}
+                            <img src="{{ r.image }}" class="max-w-full max-h-full object-contain shadow-2xl rounded-xl border border-gray-800">
+                        {% else %}
+                            <iframe src="{{ r.image }}" class="w-full h-full max-w-6xl mx-auto bg-white shadow-2xl rounded-xl border border-gray-300" frameborder="0"></iframe>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        </main>
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'insufficient_coins') {
+        alert("Insufficient coins! You need 20 coins to borrow/rent this item.");
+    }
+</script>
+</html>
+
+
+
+
+

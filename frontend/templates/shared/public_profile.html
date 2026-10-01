@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ target_user.name }}'s Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="bg-white shadow-sm py-4 px-8 flex justify-between items-center shrink-0">
+        <a href="javascript:history.back()" class="flex items-center text-gray-500 hover:text-indigo-600 transition font-semibold">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
+        </a>
+        <div class="font-bold text-lg text-gray-800">User Profile</div>
+    </header>
+    
+    <main class="flex-1 flex justify-center p-8">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-sm border border-gray-100 p-8 text-center h-fit">
+            <div class="w-32 h-32 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-5xl mx-auto mb-6 shadow-sm">
+                {{ target_user.name[0] }}
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ target_user.name }}</h1>
+            <p class="text-gray-500 mb-8"><i class="fa-solid fa-user-graduate mr-2"></i> {{ target_user.role|capitalize }} Member</p>
+            
+            {% if target_user.id != user.id %}
+                <div class="border-t border-gray-100 pt-8">
+                    {% if friendship_status == 'none' %}
+                        <form action="/api/friends/request/{{ target_user.id }}" method="POST">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full transition shadow-md w-full">
+                                <i class="fa-solid fa-user-plus mr-2"></i> Send Friend Request
+                            </button>
+                        </form>
+                    {% elif friendship_status == 'pending_sent' %}
+                        <button disabled class="bg-gray-100 text-gray-500 font-bold py-3 px-8 rounded-full w-full cursor-not-allowed">
+                            <i class="fa-solid fa-clock mr-2"></i> Friend Request Pending
+                        </button>
+                    {% elif friendship_status == 'pending_received' %}
+                        <div class="bg-yellow-50 text-yellow-700 p-4 rounded-xl mb-4 text-sm font-semibold border border-yellow-100">
+                            {{ target_user.name }} sent you a friend request.
+                        </div>
+                        <div class="flex space-x-4">
+                            <form action="/api/friends/accept/{{ friend_req.id }}" method="POST" class="flex-1">
+                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full transition w-full shadow-md">
+                                    <i class="fa-solid fa-check mr-2"></i> Accept
+                                </button>
+                            </form>
+                        </div>
+                    {% elif friendship_status == 'friends' %}
+                        <div class="bg-green-50 text-green-700 p-4 rounded-xl mb-6 text-sm font-semibold border border-green-100">
+                            <i class="fa-solid fa-handshake mr-2"></i> You and {{ target_user.name }} are friends.
+                        </div>
+                        <a href="/my-friends" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full transition shadow-md w-full inline-block">
+                            <i class="fa-solid fa-comment mr-2"></i> Message
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-gray-400 italic mt-6">This is your own profile.</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

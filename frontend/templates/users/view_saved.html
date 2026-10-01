@@ -1,0 +1,71 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewing: {{ r.title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 h-screen flex flex-col overflow-hidden m-0">
+    <div class="bg-gray-800 text-white px-6 py-4 flex items-center justify-between shadow-md shrink-0 border-b border-gray-700">
+        <div class="flex items-center">
+            <a href="/saved-resources" class="text-gray-300 hover:text-white mr-4 transition"><i class="fa-solid fa-arrow-left text-xl"></i></a>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">{{ r.title }}</h1>
+                <p class="text-xs text-gray-400">Saved Resource Viewer</p>
+            </div>
+        </div>
+        <div>
+            <a href="{{ r.image }}" download class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2 rounded-lg text-sm shadow transition">
+                <i class="fa-solid fa-download mr-1"></i> Download
+            </a>
+        </div>
+    </div>
+    <div class="flex-1 w-full h-full bg-[#0a0a0a] flex items-center justify-center p-4">
+        {% if r.image.endswith('.jpg') or r.image.endswith('.jpeg') or r.image.endswith('.png') or r.image.endswith('.webp') %}
+            <img src="{{ r.image }}" class="max-w-full max-h-full object-contain rounded shadow-2xl border border-gray-700">
+        {% else %}
+            <iframe src="{{ r.image }}" class="w-full h-full max-w-5xl mx-auto bg-white rounded shadow-2xl" frameborder="0"></iframe>
+        {% endif %}
+    </div>
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

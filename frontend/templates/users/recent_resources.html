@@ -1,0 +1,127 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recently Added - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; color: #1e293b; overflow: hidden; }
+        .sidebar-item { display: flex; align-items: center; padding: 10px 16px; margin: 4px 16px; border-radius: 8px; color: #475569; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .sidebar-item:hover { background-color: #f1f5f9; color: #1e293b; }
+        .sidebar-item i { width: 24px; font-size: 16px; text-align: center; margin-right: 12px; }
+        .main-scroll { overflow-y: auto; height: 100vh; padding-bottom: 40px; }
+        .resource-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; transition: all 0.2s; display: flex; align-items: center; }
+        .resource-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transform: translateY(-2px); }
+    </style>
+</head>
+<body class="flex h-screen">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-white shadow-[2px_0_15px_rgba(0,0,0,0.02)] flex flex-col z-20 shrink-0 hidden md:flex">
+    <div class="py-8 px-6 flex flex-col items-center justify-center">
+        <div class="text-green-500 text-4xl mb-2"><i class="fa-solid fa-leaf"></i></div>
+        <h1 class="text-xl font-bold text-center leading-tight text-gray-800">Student<br>Resource Hub</h1>
+    </div>
+    <nav class="flex-1 overflow-y-auto">
+        <a href="/dashboard" class="sidebar-item"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+    </nav>
+</aside>
+
+<!-- Main Content -->
+<main class="flex-1 flex flex-col main-scroll relative">
+    <div class="px-6 py-8 md:px-10">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fa-solid fa-clock-rotate-left text-indigo-500 mr-3"></i> Recently Added Resources
+            </h2>
+        </div>
+
+        <div class="space-y-4 max-w-4xl">
+            {% for r in resources %}
+            <a href="/resource/{{ r.id }}" class="resource-card group">
+                <div class="w-16 h-16 rounded-xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shrink-0 mr-5">
+                    {% if r.category == 'Book' %}
+                        <i class="fa-solid fa-book"></i>
+                    {% elif r.category == 'Notes' %}
+                        <i class="fa-solid fa-file-lines"></i>
+                    {% else %}
+                        <i class="fa-solid fa-laptop"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-lg font-bold text-gray-800 group-hover:text-indigo-600 transition">{{ r.title }}</h3>
+                        <span class="text-xs font-semibold text-gray-400"><i class="fa-regular fa-calendar mr-1"></i> {{ r.date_posted }}</span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-500 mb-2 line-clamp-1">{{ r.description }}</p>
+                    
+                    <div class="flex items-center space-x-3 mt-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-green-700 bg-green-100 px-2.5 py-1 rounded-full">{{ r.resource_type }}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full">{{ r.category }}</span>
+                        
+                        {% if r.resource_type == 'rent' and r.price_per_day %}
+                        <span class="text-xs font-bold text-gray-600"><i class="fa-solid fa-indian-rupee-sign text-gray-400 text-[10px] mr-0.5"></i>{{ r.price_per_day }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="ml-4 pl-4 border-l border-gray-100 flex items-center h-full">
+                    <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-indigo-400 transition"></i>
+                </div>
+            </a>
+            {% else %}
+            <div class="text-center py-20 bg-white rounded-xl border border-gray-100">
+                <div class="text-5xl text-gray-200 mb-4"><i class="fa-solid fa-folder-open"></i></div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">No resources yet</h3>
+                <p class="text-gray-500">Resources added by the community will appear here.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

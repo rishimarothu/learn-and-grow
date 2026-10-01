@@ -1,0 +1,99 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ resource.title }} - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0a0a0a; color: white; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+<!-- Header -->
+<div class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0">
+    <div class="flex items-center space-x-4">
+        <a href="javascript:history.back()" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition text-gray-300">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div>
+            <h1 class="font-bold text-lg leading-tight">{{ resource.title }}</h1>
+            <p class="text-xs text-gray-400">{{ resource.category }}</p>
+        </div>
+    </div>
+    <div class="flex items-center space-x-3">
+        <!-- Like Button -->
+        <a href="/toggle-like/{{ resource.id }}" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition shadow-lg border border-gray-700 text-xl">
+            {% if is_liked %}
+            <i class="fa-solid fa-heart text-red-500"></i>
+            {% else %}
+            <i class="fa-regular fa-heart text-white hover:text-red-400 transition"></i>
+            {% endif %}
+        </a>
+        
+        <!-- Download Button -->
+        <a href="/download/{{ resource.id }}" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-xl flex items-center transition shadow-lg">
+            <i class="fa-solid fa-download mr-2"></i> Download
+        </a>
+    </div>
+</div>
+
+<!-- Preview Area -->
+<div class="flex-1 w-full bg-[#050505] flex items-center justify-center p-4 lg:p-10 overflow-hidden relative">
+    {% if resource.image %}
+        {% if resource.image.endswith('.jpg') or resource.image.endswith('.jpeg') or resource.image.endswith('.png') or resource.image.endswith('.webp') %}
+            <img src="{{ resource.image }}" class="max-w-full max-h-full object-contain shadow-2xl rounded border border-gray-800">
+        {% else %}
+            <iframe src="{{ resource.image }}" class="w-full h-full max-w-5xl mx-auto bg-white rounded shadow-2xl" frameborder="0"></iframe>
+        {% endif %}
+    {% else %}
+        <div class="text-center text-gray-600">
+            <i class="fa-solid fa-file-circle-xmark text-6xl mb-4"></i>
+            <p>No preview available for this file.</p>
+        </div>
+    {% endif %}
+</div>
+
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+

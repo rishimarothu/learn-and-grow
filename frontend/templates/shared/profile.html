@@ -1,0 +1,315 @@
+<!-- 
+TEMPLATE PURPOSE: 
+This file is dynamically rendered by FastAPI using Jinja2. 
+Variables inside double braces are passed directly from main.py.
+Logic inside percent braces controls what the user sees based on their database state.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Learn & Grow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f6fb; color: #1e293b; overflow: hidden; }
+        .sidebar-item { display: flex; align-items: center; padding: 10px 16px; margin: 4px 16px; border-radius: 8px; color: #475569; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .sidebar-item:hover { background-color: #f1f5f9; color: #1e293b; }
+        .sidebar-item.active { background-color: #e0e7ff; color: #4338ca; font-weight: 600; }
+        .sidebar-item i { width: 24px; font-size: 16px; text-align: center; margin-right: 12px; }
+        .main-scroll { overflow-y: auto; height: 100vh; padding-bottom: 40px; }
+    </style>
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        html.dark { filter: invert(1) hue-rotate(180deg); background: #0a0a0a; }
+        html.dark img, html.dark video { filter: invert(1) hue-rotate(180deg); }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="flex flex-col md:flex-row h-screen relative">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-white shadow-[2px_0_15px_rgba(0,0,0,0.02)] flex flex-col z-20 shrink-0">
+    <!-- Logo -->
+    <div class="py-8 px-6 flex flex-col items-center justify-center">
+        <div class="text-green-500 text-4xl mb-2"><i class="fa-solid fa-leaf"></i></div>
+        <h1 class="text-xl font-bold text-center leading-tight text-gray-800">Student<br>Resource Hub</h1>
+        <p class="text-xs text-gray-400 mt-1">Learn &middot; Share &middot; Grow</p>
+    </div>
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto">
+        {% if user.role == "admin" %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Dashboard</a>
+        
+        <a href="/all-users" class="sidebar-item"><i class="fa-solid fa-users"></i> All Users</a>
+        <a href="/reports" class="sidebar-item"><i class="fa-solid fa-chart-simple"></i> Reports & Analytics</a>
+        <a href="/admin-messages" class="sidebar-item"><i class="fa-regular fa-envelope"></i> Messages</a>
+        {% else %}
+        <a href="/dashboard" class="sidebar-item active"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="/liked-resources" class="sidebar-item"><i class="fa-solid fa-heart"></i> Liked Resources</a>
+        <a href="/saved-resources" class="sidebar-item"><i class="fa-solid fa-bookmark"></i> Saved Resources</a>
+        <a href="/requests" class="sidebar-item"><i class="fa-solid fa-hand-holding-hand"></i> Raise a Request</a>
+        <a href="/my-exchanges" class="sidebar-item"><i class="fa-solid fa-rotate"></i> My Exchanges</a><a href="/rewards" class="sidebar-item"><i class="fa-solid fa-coins text-yellow-500"></i> My Rewards</a>
+        <a href="/help" class="sidebar-item"><i class="fa-solid fa-headset"></i> Help & Support</a>
+        {% endif %}
+    </nav>
+    <!-- Bottom Art -->
+    <div class="p-6 text-center opacity-70">
+        <div class="text-green-500 text-3xl mb-2 opacity-50"><i class="fa-solid fa-book"></i></div>
+        <p class="font-cursive italic text-sm text-gray-500 transform -rotate-3">Better<br>Students<br>Brighter<br>Tomorrows <i class="fa-regular fa-heart ml-1"></i></p>
+    </div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col main-scroll relative">
+    
+    <!-- Mobile Top Bar -->
+    <div class="md:hidden bg-white shadow-sm p-4 flex items-center justify-between z-40 sticky top-0 shrink-0">
+        <div class="font-bold text-lg text-gray-800 flex items-center"><i class="fa-solid fa-leaf text-green-500 mr-2"></i> Resource Hub</div>
+        <button onclick="document.getElementById('mobile-sidebar').classList.remove('-translate-x-full')" class="text-gray-600 focus:outline-none">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+    </div>
+
+    <div class="px-6 md:px-10 py-10 max-w-6xl mx-auto w-full">
+        <div class="mb-10 bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <div class="w-24 h-24 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-4xl font-bold">
+                    <i class="fa-regular fa-user"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-1">{{ user.name }}</h2>
+                    <p class="text-gray-500 mb-1"><i class="fa-regular fa-envelope mr-2"></i> {{ user.email }}</p>
+                    <p class="text-gray-500"><i class="fa-solid fa-phone mr-2"></i> {{ user.phone_number }}</p>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                <a href="/edit-profile" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-md whitespace-nowrap flex items-center justify-center">
+                    <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Profile
+                </a>
+                <a href="/logout" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold py-3 px-6 rounded-xl transition shadow-md whitespace-nowrap flex items-center justify-center">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        
+        {% if user.role == "admin" %}
+        <div class="mt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-gift text-indigo-500 mr-2"></i> Direct Gift Users</h3>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-xl">
+                <p class="text-gray-500 mb-6 text-sm">Send coins directly to users who regularly contribute to the platform. They will be immediately credited to their account.</p>
+                
+                {% if request.query_params.get("success") %}
+                <div class="bg-green-50 text-green-700 p-4 rounded-lg mb-6 text-sm font-bold border border-green-200">
+                    <i class="fa-solid fa-circle-check mr-2"></i> Coins gifted successfully!
+                </div>
+                {% endif %}
+                
+                {% if request.query_params.get("error") %}
+                <div class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm font-bold border border-red-200">
+                    <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ request.query_params.get("error") }}
+                </div>
+                {% endif %}
+
+                <form action="/api/admin/gift-coins" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">User's Email Address</label>
+                        <input type="email" name="email" required placeholder="student@example.com" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Amount (Coins)</label>
+                        <input type="number" name="amount" required min="1" max="10000" placeholder="e.g. 50" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md mt-2">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Send Gift
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+
+        {% if user.role == "admin" %}
+        <div class="mt-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-6"><i class="fa-solid fa-gift text-indigo-500 mr-2"></i> Direct Gift Users</h3>
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-xl">
+                <p class="text-gray-500 mb-6 text-sm">Send coins directly to users who regularly contribute to the platform. They will be immediately credited to their account.</p>
+                
+                {% if request.query_params.get("success") %}
+                <div class="bg-green-50 text-green-700 p-4 rounded-lg mb-6 text-sm font-bold border border-green-200">
+                    <i class="fa-solid fa-circle-check mr-2"></i> Coins gifted successfully!
+                </div>
+                {% endif %}
+                
+                {% if request.query_params.get("error") %}
+                <div class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 text-sm font-bold border border-red-200">
+                    <i class="fa-solid fa-circle-exclamation mr-2"></i> {{ request.query_params.get("error") }}
+                </div>
+                {% endif %}
+
+                <form action="/api/admin/gift-coins" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">User's Email Address</label>
+                        <input type="email" name="email" required placeholder="student@example.com" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Amount (Coins)</label>
+                        <input type="number" name="amount" required min="1" max="10000" placeholder="e.g. 50" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition shadow-md mt-2">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Send Gift
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Uploads</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ total_uploads }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-green-50 text-green-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-bookmark"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Saved Items</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ total_saves }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-hand-holding-hand"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Requests</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ total_requests }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-pink-50 text-pink-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-heart"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Liked Items</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ liked_count }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-rotate"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Exchanges</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ exchanges_count }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-yellow-50 text-yellow-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-circle-question"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Doubts Asked</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ doubts_count }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-teal-50 text-teal-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-right-left"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Rented Out</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ rented_out_count }}</h3>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div class="w-10 h-10 bg-red-50 text-red-500 rounded-xl flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div>
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Borrowed</p>
+                    <h3 class="text-xl font-bold text-gray-800">{{ borrowed_count }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-gray-800 mb-6">My Uploaded Resources</h3>
+        
+        
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for r in my_resources %}
+            
+            <!-- Clicking the card opens the file directly -->
+            <a href="/resource/{{ r.id }}" class="exchange-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-lg transition group block relative">
+                
+
+
+                <div class="h-40 bg-gray-50 relative border-b border-gray-100 flex items-center justify-center overflow-hidden group-hover:bg-gray-100 transition">
+                    {% if r.image %}
+                        {% if r.image.endswith('.jpg') or r.image.endswith('.jpeg') or r.image.endswith('.png') or r.image.endswith('.webp') %}
+                            <img src="{{ r.image }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <i class="fa-solid fa-file-pdf text-5xl text-indigo-300"></i>
+                        {% endif %}
+                    {% else %}
+                        <i class="fa-solid fa-file-lines text-4xl text-gray-300"></i>
+                    {% endif %}
+                </div>
+                <div class="p-5">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-1 rounded">{{ r.category }}</span>
+                    </div>
+                    <h3 class="resource-title font-bold text-lg text-gray-800 mb-1 group-hover:text-indigo-600 transition truncate">{{ r.title }}</h3>
+                    <p class="text-sm text-gray-500 truncate mb-4">{{ r.description }}</p>
+                    <div class="flex items-center text-xs font-semibold text-gray-400">
+                        <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-2">{{ r.owner.name[0] if r.owner.name else 'U' }}</div>
+                        {{ r.owner.name }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if not my_resources %}
+        <div class="text-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <i class="fa-regular fa-bookmark text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-700">No saved resources</h3>
+            <p class="text-gray-500 mt-2">Resources you bookmark will appear here for quick access.</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endif %}
+    </div>
+</main>
+
+<!-- Auto-updating Notification Badge -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/unread-count')
+            .then(r => r.json())
+            .then(data => {
+                const bells = document.querySelectorAll('a[href="/notifications"] span.bg-red-500');
+                bells.forEach(b => {
+                    if(data.count > 0) {
+                        b.style.display = 'flex';
+                        b.style.alignItems = 'center';
+                        b.style.justifyContent = 'center';
+                        b.style.fontSize = '10px';
+                        b.style.color = 'white';
+                        b.style.fontWeight = 'bold';
+                        b.innerText = data.count > 9 ? '9+' : data.count;
+                        b.classList.remove('w-2.5', 'h-2.5', 'w-2', 'h-2');
+                        b.classList.add('w-5', 'h-5', '-top-2', '-right-2');
+                    } else {
+                        b.style.display = 'none';
+                    }
+                });
+            })
+            .catch(e => console.log('Error fetching notification count:', e));
+    });
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
