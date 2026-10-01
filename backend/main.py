@@ -2,6 +2,13 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
+# --- Path configuration ---
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_STATIC = os.path.join(BASE_DIR, "frontend", "static")
+FRONTEND_TEMPLATES = os.path.join(BASE_DIR, "frontend", "templates")
+# --------------------------
+
+
 """
 MAIN APPLICATION MODULE (main.py)
 ---------------------------------
@@ -29,8 +36,8 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="../frontend/static"), name="static")
-templates = Jinja2Templates(directory="../frontend/templates")
+app.mount("/static", StaticFiles(directory=FRONTEND_STATIC), name="static")
+templates = Jinja2Templates(directory=FRONTEND_TEMPLATES)
 
 # Dependency
 
@@ -207,7 +214,7 @@ async def help_post(
     
     file_url = None
     if image and image.filename:
-        upload_dir = "../frontend/static/uploads"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = f"{upload_dir}/{image.filename}"
         with open(file_path, "wb") as buffer:
@@ -353,8 +360,8 @@ async def save_community_update(update_id: int, request: Request, title: str = F
     import shutil
     import os
     if image and image.filename:
-        os.makedirs("../frontend/static/uploads", exist_ok=True)
-        file_location = f"../frontend/static/uploads/{image.filename}"
+        os.makedirs(os.path.join(FRONTEND_STATIC, "uploads"), exist_ok=True)
+        file_location = os.path.join(FRONTEND_STATIC, "uploads", f"{image.filename}")
         with open(file_location, "wb") as f:
             shutil.copyfileobj(image.file, f)
         update.image_url = f"/static/uploads/{image.filename}"
@@ -384,8 +391,8 @@ async def publish_community_update(
     
     image_url = None
     if image and image.filename:
-        os.makedirs("../frontend/static/uploads", exist_ok=True)
-        file_path = f"../frontend/static/uploads/{image.filename}"
+        os.makedirs(os.path.join(FRONTEND_STATIC, "uploads"), exist_ok=True)
+        file_path = os.path.join(FRONTEND_STATIC, "uploads", f"{image.filename}")
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         image_url = f"/{file_path}"
@@ -855,7 +862,7 @@ async def upload_resource_post(
     # Handle file save
     file_url = None
     if file and file.filename:
-        upload_dir = "../frontend/static/uploads"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = f"{upload_dir}/{file.filename}"
         with open(file_path, "wb") as buffer:
@@ -1199,7 +1206,7 @@ async def help_post(
     
     file_url = None
     if image and image.filename:
-        upload_dir = "../frontend/static/uploads"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = f"{upload_dir}/{image.filename}"
         with open(file_path, "wb") as buffer:
@@ -1345,8 +1352,8 @@ async def save_community_update(update_id: int, request: Request, title: str = F
     import shutil
     import os
     if image and image.filename:
-        os.makedirs("../frontend/static/uploads", exist_ok=True)
-        file_location = f"../frontend/static/uploads/{image.filename}"
+        os.makedirs(os.path.join(FRONTEND_STATIC, "uploads"), exist_ok=True)
+        file_location = os.path.join(FRONTEND_STATIC, "uploads", f"{image.filename}")
         with open(file_location, "wb") as f:
             shutil.copyfileobj(image.file, f)
         update.image_url = f"/static/uploads/{image.filename}"
@@ -1376,8 +1383,8 @@ async def publish_community_update(
     
     image_url = None
     if image and image.filename:
-        os.makedirs("../frontend/static/uploads", exist_ok=True)
-        file_path = f"../frontend/static/uploads/{image.filename}"
+        os.makedirs(os.path.join(FRONTEND_STATIC, "uploads"), exist_ok=True)
+        file_path = os.path.join(FRONTEND_STATIC, "uploads", f"{image.filename}")
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
         image_url = f"/{file_path}"
@@ -1842,7 +1849,7 @@ async def upload_resource_post(
     # Handle file save
     file_url = None
     if file and file.filename:
-        upload_dir = "../frontend/static/uploads"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = f"{upload_dir}/{file.filename}"
         with open(file_path, "wb") as buffer:
@@ -2095,7 +2102,7 @@ async def update_resource(request: Request, resource_id: int, title: str = Form(
     if file and file.filename:
         import os
         import shutil
-        upload_dir = "../frontend/static/uploads"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = f"{upload_dir}/{file.filename}"
         with open(file_path, "wb") as buffer:
@@ -2268,7 +2275,7 @@ async def process_exchange_offer(
     import os
     ext = file.filename.split('.')[-1] if '.' in file.filename else 'pdf'
     filename = f"exchange_{uuid.uuid4().hex}.{ext}"
-    filepath = f"../frontend/static/uploads/{filename}"
+    filepath = os.path.join(FRONTEND_STATIC, "uploads", f"{filename}")
     with open(filepath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
         
@@ -2457,7 +2464,7 @@ async def send_chat_message(
     image_url = None
     if image and image.filename:
         # Save image
-        upload_dir = "../frontend/static/uploads/chat"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads", "chat")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = os.path.join(upload_dir, image.filename)
         with open(file_path, "wb") as buffer:
@@ -2632,7 +2639,7 @@ async def send_private_message(
     image_url = None
     if image and image.filename:
         # Save image
-        upload_dir = "../frontend/static/uploads/chat"
+        upload_dir = os.path.join(FRONTEND_STATIC, "uploads", "chat")
         os.makedirs(upload_dir, exist_ok=True)
         file_path = os.path.join(upload_dir, image.filename)
         with open(file_path, "wb") as buffer:
