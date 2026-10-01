@@ -1,26 +1,17 @@
-"""
-DATABASE MODULE (database.py)
------------------------------
-Purpose:
-This file sets up the SQLAlchemy database connection for the Learn & Grow application.
-It dynamically supports both local SQLite and Render's PostgreSQL databases.
-"""
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Fallback to local SQLite if DATABASE_URL is not provided (e.g. local dev)
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./learnandgrow.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Render uses 'postgres://' but SQLAlchemy 1.4+ requires 'postgresql://'
-if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
-    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    engine = create_engine(DATABASE_URL)
 else:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+    # Local fallback
+    DATABASE_URL = "sqlite:///./learnandgrow.db"
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
