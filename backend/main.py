@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(__file__))
+
 """
 MAIN APPLICATION MODULE (main.py)
 ---------------------------------
@@ -2683,6 +2687,7 @@ async def edit_private_message(request: Request, message_id: int, new_message: s
     msg.message = new_message
     db.commit()
     return JSONResponse(content={'status': 'success'})
+
 
 
 
